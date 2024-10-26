@@ -62,5 +62,8 @@ if st.button("モデルコースを生成"):
         )
         st.write("生成されたモデルコース:")
         st.write(response.text)
+        
+        # コンソールに使用状況メタデータを出力
+        print("API使用状況メタデータ:", response.usage_metadata)
     else:
         st.warning("興味の対象を少なくとも1つ選択してください。")
