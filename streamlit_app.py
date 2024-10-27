@@ -32,7 +32,7 @@ destination = st.selectbox("旅行先の都道府県", prefectures)
 num_people = st.slider("人数", 1, 10, 1)
 interests = st.multiselect(
     "興味の対象（複数選択可）", 
-    ["歴史", "食", "博物館", "アニメ", "温泉", "グルメ", "自然", "アート", "アクティビティ"]
+    ["歴史", "食", "博物館", "アニメ聖地巡礼", "温泉", "グルメ", "自然", "アート", "アクティビティ"]
 )
 duration = st.slider("滞在日数", 1, 10, 1)
 special_requests = st.selectbox(
