@@ -78,11 +78,7 @@ if st.button("モデルコースを生成"):
         st.write(response.text)
         
         # コンソールに使用状況メタデータを出力
-        if response.usage_metadata:
-            print(f"API使用状況メタデータ:")
-            print(f"  プロンプトトークン数: {response.usage_metadata.prompt_token_count}")
-            print(f"  応答トークン数: {response.usage_metadata.candidates_token_count}")
-            print(f"  合計トークン数: {response.usage_metadata.total_token_count}")
+        print("API使用状況メタデータ:", response.usage_metadata)
     else:
         st.warning("興味の対象を少なくとも1つ選択してください。")
 
