@@ -40,6 +40,15 @@ special_requests = st.selectbox(
     ["なし", "できるだけ多くまわりたい", "ゆっくりまわりたい"]
 )
 
+# 入力検証
+def validate_inputs(start, destination, num_people, interests, duration, special_requests):
+    # 都道府県のチェック
+    if start not in prefectures or destination not in prefectures:
+        st.error("無効な都道府県が選択されました。")
+        return False
+    # その他のパラメーターは、Streamlitのウィジェットが範囲外を防止するので検証不要
+    return True
+
 # プロンプトを生成する関数
 def create_travel_prompt(start, destination, num_people, interests, duration, special_requests):
     prompt = f"""
@@ -58,7 +67,7 @@ def create_travel_prompt(start, destination, num_people, interests, duration, sp
 
 # Gemini AIへのリクエスト
 if st.button("モデルコースを生成"):
-    if interests:
+    if interests and validate_inputs(start, destination, num_people, interests, duration, special_requests):
         travel_prompt = create_travel_prompt(start, destination, num_people, interests, duration, special_requests)
         model = genai.GenerativeModel(model_name)  # 環境変数から読み込んだモデル名を使用
         response = model.generate_content(
