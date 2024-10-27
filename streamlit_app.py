@@ -24,7 +24,7 @@ st.title("日本旅行モデルコース生成アプリ")
 st.write("以下のパラメーターを選択して、旅行プランを生成してください。")
 
 # ユーザー入力
-start = st.selectbox("出発する都道府県", prefectures)
+start = st.selectbox("出発する都道府県", prefectures, index=prefectures.index("東京"))
 destination = st.selectbox("旅行先の都道府県", prefectures)
 num_people = st.slider("人数", 1, 10, 1)
 interests = st.multiselect(
