@@ -2,11 +2,17 @@ import streamlit as st
 import google.generativeai as genai
 import os
 import dotenv
+from supabase import create_client, Client
+from datetime import datetime
 
-# 環境変数からAPIキーとモデル名を読み込み
+# 環境変数からAPIキーとSupabase接続情報を読み込み
 dotenv.load_dotenv()
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 model_name = os.environ.get("GEMINI_MODEL_NAME", "gemini-1.5-pro")  # デフォルトモデル名を指定
+
+supabase_url = os.environ["SUPABASE_URL"]
+supabase_key = os.environ["SUPABASE_KEY"]
+supabase: Client = create_client(supabase_url, supabase_key)
 
 # 都道府県のリスト
 prefectures = [
@@ -32,7 +38,7 @@ destination = st.selectbox("旅行先の都道府県", prefectures)
 num_people = st.slider("人数", 1, 10, 1)
 interests = st.multiselect(
     "興味の対象（複数選択可）", 
-    ["温泉", "グルメ", "アクティビティ","歴史","博物館", "アニメ聖地巡礼", "自然", "アート", "Vtuber聖地巡礼"]
+    ["温泉", "グルメ", "アクティビティ", "歴史", "博物館", "アニメ聖地巡礼", "自然", "アート", "Vtuber聖地巡礼"]
 )
 duration = st.slider("滞在日数", 1, 10, 1)
 special_requests = st.selectbox(
@@ -46,7 +52,6 @@ def validate_inputs(start, destination, num_people, interests, duration, special
     if start not in prefectures or destination not in prefectures:
         st.error("無効な都道府県が選択されました。")
         return False
-    # その他のパラメーターは、Streamlitのウィジェットが範囲外を防止するので検証不要
     return True
 
 # プロンプトを生成する関数
@@ -60,13 +65,27 @@ def create_travel_prompt(start, destination, num_people, interests, duration, sp
     - 滞在日数: {duration}日
     - 特別リクエスト: {special_requests}
     以上の条件に基づき、訪れるべき場所やアクティビティを含んだおすすめの旅行モデルコースと日ごとの予算と合計予算を提案してください。
-    また、下記の指示に従ってください。
-    - 予算には交通費、宿泊費も含めてください。
-    - 情報元となるURL等も最後にできる限り記載してください。
-    - できる限り最新の情報を利用してください。
-    - 情報の正確性に注意してください。想像でかかないでください。
+    予算には交通費、宿泊費も含めてください。
+    また情報元となるURL等も最後にできる限り記載してください。
     """
     return prompt
+
+# 実行結果をSupabaseに保存する関数
+def save_to_supabase(model_name, prompt, output_result, prompt_token_count, response_token_count, total_token_count):
+    data = {
+        "model_name": model_name,
+        "prompt": prompt,
+        "output_result": output_result,
+        "prompt_token_count": prompt_token_count,
+        "response_token_count": response_token_count,
+        "total_token_count": total_token_count,
+        "execution_time": datetime.now().isoformat()
+    }
+    response = supabase.from_("ai_execution_logs").insert(data).execute()
+    if response.data:
+        print("データが正常に保存されました")
+    else:
+        print("データ保存に失敗しました")
 
 # Gemini AIへのリクエスト
 if st.button("モデルコースを生成"):
@@ -80,12 +99,21 @@ if st.button("モデルコースを生成"):
         st.write("生成されたモデルコース:")
         st.write(response.text)
         
-        # コンソールに使用状況メタデータを出力
+        # コンソールに使用状況メタデータを正しく出力
         if response.usage_metadata:
+            prompt_token_count = response.usage_metadata.prompt_token_count
+            response_token_count = response.usage_metadata.candidates_token_count
+            total_token_count = response.usage_metadata.total_token_count
             print(f"API使用状況メタデータ:")
-            print(f"  プロンプトトークン数: {response.usage_metadata.prompt_token_count}")
-            print(f"  応答トークン数: {response.usage_metadata.candidates_token_count}")
-            print(f"  合計トークン数: {response.usage_metadata.total_token_count}")
+            print(f"  プロンプトトークン数: {prompt_token_count}")
+            print(f"  応答トークン数: {response_token_count}")
+            print(f"  合計トークン数: {total_token_count}")
+
+            # Supabaseに保存
+            save_to_supabase(
+                model_name, travel_prompt, response.text,
+                prompt_token_count, response_token_count, total_token_count
+            )
     else:
         st.warning("興味の対象を少なくとも1つ選択してください。")
 
