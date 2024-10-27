@@ -48,6 +48,7 @@ def create_travel_prompt(start, destination, num_people, interests, duration, sp
     - 特別リクエスト: {special_requests}
     以上の条件に基づき、訪れるべき場所やアクティビティを含んだおすすめの旅行モデルコースと日ごとの予算と合計予算を提案してください。
     予算には交通費、宿泊費も含めてください。
+    また情報元となるURL等も最後にできる限り記載してください。
     """
     return prompt
 
