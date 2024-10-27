@@ -72,7 +72,7 @@ if st.button("モデルコースを生成"):
         model = genai.GenerativeModel(model_name)  # 環境変数から読み込んだモデル名を使用
         response = model.generate_content(
             travel_prompt,
-            generation_config=genai.types.GenerationConfig(temperature=1.0),
+            generation_config=genai.types.GenerationConfig(temperature=1.5),
         )
         st.write("生成されたモデルコース:")
         st.write(response.text)
