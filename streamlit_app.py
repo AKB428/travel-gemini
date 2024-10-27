@@ -3,9 +3,10 @@ import google.generativeai as genai
 import os
 import dotenv
 
-# 環境変数からAPIキーを読み込み
+# 環境変数からAPIキーとモデル名を読み込み
 dotenv.load_dotenv()
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+model_name = os.environ.get("GEMINI_MODEL_NAME", "gemini-1.5-pro")  # デフォルトモデル名を指定
 
 # 都道府県のリスト
 prefectures = [
@@ -56,7 +57,7 @@ def create_travel_prompt(start, destination, num_people, interests, duration, sp
 if st.button("モデルコースを生成"):
     if interests:
         travel_prompt = create_travel_prompt(start, destination, num_people, interests, duration, special_requests)
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        model = genai.GenerativeModel(model_name)  # 環境変数から読み込んだモデル名を使用
         response = model.generate_content(
             travel_prompt,
             generation_config=genai.types.GenerationConfig(temperature=1.0),
@@ -68,3 +69,14 @@ if st.button("モデルコースを生成"):
         print("API使用状況メタデータ:", response.usage_metadata)
     else:
         st.warning("興味の対象を少なくとも1つ選択してください。")
+
+# フッターの追加
+st.markdown(
+    """
+    <hr style="border: none; border-top: 1px solid #ccc;"/>
+    <div style="text-align: center;">
+        <p>制作元: <a href="https://project-shangrila.github.io/" target="_blank">秋葉原IT戦略研究所</a></p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
