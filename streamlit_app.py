@@ -21,7 +21,10 @@ prefectures = [
 
 # Streamlit UI
 st.title("日本旅行モデルコース生成アプリ")
-st.write("旅行プランを生成してください。生成された旅行プランは生成AIで作成されており誤った情報が含まれている可能性があるため、あくまで参考として事実確認は自身で行うようにお願いします。")
+st.write(
+    f"生成された旅行プランは生成AIで作成されており誤った情報が含まれている可能性があるため、"
+    f"事実確認は自身で行うようにお願いします。AIモデル名: {model_name}"
+)
 
 # ユーザー入力
 start = st.selectbox("出発する都道府県", prefectures, index=prefectures.index("東京"))
